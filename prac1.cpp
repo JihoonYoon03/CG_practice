@@ -51,4 +51,64 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 GLvoid Reshape(int w, int h) //--- 콜백 함수: 다시 그리기 콜백 함수
 {
 	glViewport(0, 0, w, h);
-}GLvoid Keyboard(unsigned char key, int x, int y){	switch (key) {	case 'c':		red = 0.0f;		green = 1.0f;		blue = 1.0f;		break;	case 'm':		red = 1.0f;		green = 0.0f;		blue = 1.0f;		break;	case 'y':		red = 1.0f;		green = 1.0f;		blue = 0.0f;		break;	case 'a':		red = rand() % 100 / 100.0f;		green = rand() % 100 / 100.0f;		blue = rand() % 100 / 100.0f;		std::cout << red << green << blue << std::endl;		break;	case 'w':		red = 1.0f;		green = 1.0f;		blue = 1.0f;		break;	case 'k':		red = 0.0f;		green = 0.0f;		blue = 0.0f;		break;	case 't':		timerToggle = true;		glutTimerFunc(100, TimerFunction, 1);		break;	case 's':		timerToggle = false;		break;	case 'q':		glutLeaveMainLoop();		return;	}	glutPostRedisplay();}void TimerFunction(int value){	red = rand() % 100 / 100.0f;	green = rand() % 100 / 100.0f;	blue = rand() % 100 / 100.0f;	glutPostRedisplay();	if (timerToggle)		glutTimerFunc(100, TimerFunction, 1);	else		return;}
+}
+
+GLvoid Keyboard(unsigned char key, int x, int y)
+{
+	switch (key) {
+	case 'c':
+		red = 0.0f;
+		green = 1.0f;
+		blue = 1.0f;
+		break;
+	case 'm':
+		red = 1.0f;
+		green = 0.0f;
+		blue = 1.0f;
+		break;
+	case 'y':
+		red = 1.0f;
+		green = 1.0f;
+		blue = 0.0f;
+		break;
+	case 'a':
+		red = rand() % 100 / 100.0f;
+		green = rand() % 100 / 100.0f;
+		blue = rand() % 100 / 100.0f;
+		std::cout << red << green << blue << std::endl;
+		break;
+	case 'w':
+		red = 1.0f;
+		green = 1.0f;
+		blue = 1.0f;
+		break;
+	case 'k':
+		red = 0.0f;
+		green = 0.0f;
+		blue = 0.0f;
+		break;
+	case 't':
+		timerToggle = true;
+		glutTimerFunc(100, TimerFunction, 1);
+		break;
+	case 's':
+		timerToggle = false;
+		break;
+	case 'q':
+		glutLeaveMainLoop();
+		return;
+	}
+	glutPostRedisplay();
+}
+
+void TimerFunction(int value)
+{
+	red = rand() % 100 / 100.0f;
+	green = rand() % 100 / 100.0f;
+	blue = rand() % 100 / 100.0f;
+	glutPostRedisplay();
+	if (timerToggle)
+		glutTimerFunc(100, TimerFunction, 1);
+	else
+		return;
+}

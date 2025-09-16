@@ -13,12 +13,17 @@ struct Rect {
 
 GLvoid drawScene(GLvoid);
 GLvoid Reshape(int w, int h);
+GLvoid Mouse(int button, int state, int x, int y);
+bool isMouseIn(Rect& target, int x, int y);
+void randColor(GLfloat& r, GLfloat& g, GLfloat& b);
+
+GLfloat bgColor[3] = { 0.0f, 0.4f, 0.4f };
 
 Rect rects[4] =
 {
 	{-0.9f, 0.9f, -0.1f, 0.1f, 0.4f, 0.4f, 0.4f},
-	{ 0.1f, 0.1f, 0.9f, 0.9f, 0.1f, 0.2f, 0.3f },
-	{ -0.9f, -0.9f, -0.1f, -0.1f, 0.7f, 0.2f, 0.3f },
+	{ 0.1f, 0.9f, 0.9f, 0.1f, 0.1f, 0.2f, 0.3f },
+	{ -0.9f, -0.1f, -0.1f, -0.9f, 0.7f, 0.2f, 0.3f },
 	{ 0.1f, -0.1f, 0.9f, -0.9f, 0.4f, 0.8f, 0.2f },
 };
 
@@ -48,12 +53,13 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설�
 
 	glutDisplayFunc(drawScene); // 출력 함수의 지정
 	glutReshapeFunc(Reshape); // 다시 그리기 함수 지정
+	glutMouseFunc(Mouse); // 마우스 이벤트 콜백 함수 지정
 	glutMainLoop(); // 이벤트 처리 시작
 }
 
 GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 {
-	glClearColor(0.0f, 0.4f, 0.4f, 1.0f);
+	glClearColor(bgColor[0], bgColor[1], bgColor[2], 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 
@@ -66,4 +72,44 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 GLvoid Reshape(int w, int h)
 {
 	glViewport(0, 0, w, h);
+}
+
+GLvoid Mouse(int button, int state, int x, int y) {
+	switch (button) {
+	case GLUT_LEFT_BUTTON:
+		if (state == GLUT_DOWN) {
+			if (isMouseIn(rects[0], x, y));
+			else if (isMouseIn(rects[1], x, y));
+			else if (isMouseIn(rects[2], x, y));
+			else if (isMouseIn(rects[3], x, y));
+			else randColor(bgColor[0], bgColor[1], bgColor[2]);
+
+			std::cout << "Left Button Down (" << x << ", " << y << ")\n";
+			glutPostRedisplay();
+		}
+		break;
+	case GLUT_RIGHT_BUTTON:
+		if (state == GLUT_DOWN) {
+			std::cout << "Right Button Down (" << x << ", " << y << ")\n";
+		}
+		break;
+	}
+}
+
+bool isMouseIn(Rect& target, int x, int y)
+{
+	GLfloat xGL = (x / 400.0f) - 1.0f;
+	GLfloat yGL = 1.0f - (y / 300.0f);
+
+	if (xGL > target.x1 && xGL < target.x2 && yGL < target.y1 && yGL > target.y2) {
+		randColor(target.r, target.g, target.b);
+		return true;
+	}
+	else return false;
+}
+
+void randColor(GLfloat& r, GLfloat& g, GLfloat& b) {
+	r = rand() % 100 / 100.0f;
+	g = rand() % 100 / 100.0f;
+	b = rand() % 100 / 100.0f;
 }
