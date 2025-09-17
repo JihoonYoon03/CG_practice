@@ -2,10 +2,18 @@
 #include <gl/glew.h>
 #include <gl/freeglut.h>
 #include <gl/freeglut_ext.h>
+#include <vector>
 
 GLvoid drawScene(GLvoid);
 GLvoid Reshape(int w, int h);
 GLvoid Mouse(int button, int state, int x, int y);
+
+struct Rect {
+	GLfloat x1, y1, x2, y2;
+	GLfloat r, g, b;
+};;
+
+std::vector<Rect> rects;
 
 void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 {
