@@ -106,7 +106,8 @@ GLvoid Mouse(int button, int state, int x, int y) {
 					break;
 				}
 				else if (isMouseIn(rectsOrigin[i], x, y)) {
-					rects[i] = rectsOrigin[i];
+					rects[i] = { rectsOrigin[i].x1, rectsOrigin[i].y1, rectsOrigin[i].x2, rectsOrigin[i].y2,
+								rects[i].r, rects[i].g, rects[i].b};
 					break;
 				}
 			}
