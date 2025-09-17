@@ -19,7 +19,8 @@ class Rect {
 	GLfloat delX = 0, delY = 0;
 public:
 	Rect() {
-		randRectPos(x1, y1, x2, y2);
+		//randRectPos(x1, y1, x2, y2);
+		randSquarePos(x1, y1, x2, y2);
 		randColor(r, g, b);
 	}
 

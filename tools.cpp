@@ -6,6 +6,14 @@ void randColor(GLfloat& r, GLfloat& g, GLfloat& b) {
 	b = rand() / static_cast<GLfloat>(RAND_MAX);
 }
 
+void randSquarePos(GLfloat& x1, GLfloat& y1, GLfloat& x2, GLfloat& y2) {
+	x1 = rand() / static_cast<GLfloat>(RAND_MAX) * 2.0f - 1.0f;
+	y1 = rand() / static_cast<GLfloat>(RAND_MAX) * 2.0f - 1.0f;
+	
+	x2 = x1 + 0.05f;
+	y2 = y1 - 0.05f;
+}
+
 void randRectPos(GLfloat& x1, GLfloat& y1, GLfloat& x2, GLfloat& y2) {
 	GLfloat randX[2], randY[2];
 	for (int i = 0; i < 2; i++) {
