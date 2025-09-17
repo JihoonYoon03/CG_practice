@@ -106,8 +106,12 @@ GLvoid Mouse(int button, int state, int x, int y) {
 					break;
 				}
 				else if (isMouseIn(rectsOrigin[i], x, y)) {
-					rects[i] = { rectsOrigin[i].x1, rectsOrigin[i].y1, rectsOrigin[i].x2, rectsOrigin[i].y2,
-								rects[i].r, rects[i].g, rects[i].b};
+					if (abs(rects[i].x2 - rects[i].x1) < 1.0f && abs(rects[i].y2 - rects[i].y1) < 1.0f) {
+						rects[i].x1 -= 0.1f;
+						rects[i].x2 += 0.1f;
+						rects[i].y1 += 0.1f;
+						rects[i].y2 -= 0.1f;
+					}
 					break;
 				}
 			}
