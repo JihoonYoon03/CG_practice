@@ -10,10 +10,13 @@ GLvoid drawScene(GLvoid);
 GLvoid Reshape(int w, int h);
 GLvoid Keyboard(unsigned char key, int x, int y);
 GLvoid Mouse(int button, int state, int x, int y);
+GLvoid MouseMotion(int x, int y);
 
 class Rect {
 	GLfloat x1 = 0, y1 = 0, x2 = 0, y2 = 0;
 	GLfloat r, g, b;
+
+	GLfloat delX = 0, delY = 0;
 public:
 	Rect() {
 		randRectPos(x1, y1, x2, y2);
@@ -22,15 +25,32 @@ public:
 
 	void draw() {
 		glColor3f(r, g, b);
-		glRectf(x1, y1, x2, y2);
+		glRectf(x1 + delX, y1 + delY, x2 + delX, y2 + delY);
 	}
 
-	void Drag() {
+	bool gotClick(int mx, int my) {
+		return isMouseIn(x1, y1, x2, y2, mx, my);
+	}
 
+	void drag(GLfloat mx, GLfloat my) {
+		delX = mx;
+		delY = my;
+	}
+
+	void stopDrag() {
+		x1 += delX;
+		x2 += delX;
+		y1 += delY;
+		y2 += delY;
+		delX = 0;
+		delY = 0;
 	}
 };;
 
 std::vector<Rect> rects;
+GLfloat lastX = 0, lastY = 0;
+bool dragging = false;
+int dragIndex = -1;
 
 void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 {
@@ -55,6 +75,7 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설�
 	glutReshapeFunc(Reshape); // 다시 그리기 함수 지정
 	glutKeyboardFunc(Keyboard); // 키보드 이벤트 콜백 함수 지정
 	glutMouseFunc(Mouse); // 마우스 이벤트 콜백 함수 지정
+	glutMotionFunc(MouseMotion); // 마우스 움직임 콜백 함수 지정
 	glutMainLoop(); // 이벤트 처리 시작
 }
 
@@ -95,8 +116,43 @@ GLvoid Keyboard(unsigned char key, int x, int y) {
 GLvoid Mouse(int button, int state, int x, int y) {
 	switch (button) {
 	case GLUT_LEFT_BUTTON:
+		if (state == GLUT_DOWN) {
+			if (dragging == false) {
+				for (auto& rect : rects) {
+					if (rect.gotClick(x, y)) {
+						std::cout << "Click!" << std::endl;
+						dragging = true;
+						dragIndex = &rect - &rects[0];
+						mPosToGL(x, y, lastX, lastY);	// 현재 마우스 위치 저장
+
+						// break를 넣지 않아야 맨 위의 사각형을 드래그 할 수 있음
+					}
+				}
+
+				glutPostRedisplay();
+			}
+		}
+		else if (state == GLUT_UP) {
+			if (dragging == true) {
+				dragging = false;
+				rects[dragIndex].stopDrag();
+				dragIndex = -1;
+
+				glutPostRedisplay();
+			}
+		}
 		break;
 	case GLUT_RIGHT_BUTTON:
 		break;
+	}
+}
+
+GLvoid MouseMotion(int x, int y) {
+	if (dragging == true) {
+		GLfloat mx = 0, my = 0;
+		mPosToGL(x, y, mx, my);
+		rects[dragIndex].drag(mx - lastX, my - lastY);	// 처음 클릭 시 마우스 위치와의 차이만큼 del값을 넘겨줌
+		std::cout << "Drag!" << std::endl;
+		glutPostRedisplay();
 	}
 }

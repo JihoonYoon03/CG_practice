@@ -29,3 +29,18 @@ void randRectPos(GLfloat& x1, GLfloat& y1, GLfloat& x2, GLfloat& y2) {
 		y2 = randY[0];
 	}
 }
+
+void mPosToGL(int mx, int my, GLfloat& xGL, GLfloat& yGL)
+{
+	xGL = (mx / 400.0f) - 1.0f;
+	yGL = 1.0f - (my / 300.0f);
+}
+
+bool isMouseIn(GLfloat& x1, GLfloat& y1, GLfloat& x2, GLfloat& y2, int mx, int my)
+{
+	GLfloat xGL, yGL;
+	mPosToGL(mx, my, xGL, yGL);
+
+	if (xGL > x1 && xGL < x2 && yGL < y1 && yGL > y2) return true;
+	else return false;
+}
