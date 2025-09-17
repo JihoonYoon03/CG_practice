@@ -3,9 +3,13 @@
 #include <gl/freeglut.h>
 #include <gl/freeglut_ext.h>
 
+struct rtPos {
+	GLfloat x1, y1, x2, y2;
+};
+
 void randColor(GLfloat& r, GLfloat& g, GLfloat& b);
-void randRectPos(GLfloat& x1, GLfloat& y1, GLfloat& x2, GLfloat& y2);
-void randSquarePos(GLfloat& x1, GLfloat& y1, GLfloat& x2, GLfloat& y2);
+void randRectPos(rtPos& pos);
+void randSquarePos(rtPos& pos);
 
 void mPosToGL(int mx, int my, GLfloat& xGL, GLfloat& yGL);
-bool isMouseIn(GLfloat& x1, GLfloat& y1, GLfloat& x2, GLfloat& y2, int mx, int my);
+bool isMouseIn(rtPos& pos, int mx, int my);
