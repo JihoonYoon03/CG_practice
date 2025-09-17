@@ -20,13 +20,15 @@ void randColor(GLfloat& r, GLfloat& g, GLfloat& b);
 
 GLfloat bgColor[3] = { 0.0f, 0.4f, 0.4f };
 
-Rect rects[4] =
+Rect rectsOrigin[4] =
 {
 	{-0.9f, 0.9f, -0.1f, 0.1f, 0.4f, 0.4f, 0.4f},
 	{ 0.1f, 0.9f, 0.9f, 0.1f, 0.1f, 0.2f, 0.3f },
 	{ -0.9f, -0.1f, -0.1f, -0.9f, 0.7f, 0.2f, 0.3f },
 	{ 0.1f, -0.1f, 0.9f, -0.9f, 0.4f, 0.8f, 0.2f },
 };
+
+Rect rects[4] = { rectsOrigin[0], rectsOrigin[1], rectsOrigin[2], rectsOrigin[3]};
 
 void drawRect(Rect rect) {
 	glColor3f(rect.r, rect.g, rect.b);
@@ -103,11 +105,9 @@ GLvoid Mouse(int button, int state, int x, int y) {
 					}
 					break;
 				}
-				else if (i == 3) {
-					rects[0] = { -0.9f, 0.9f, -0.1f, 0.1f, rects[0].r, rects[0].g, rects[0].b };
-					rects[1] = { 0.1f, 0.9f, 0.9f, 0.1f, rects[1].r, rects[1].g, rects[1].b };
-					rects[2] = { -0.9f, -0.1f, -0.1f, -0.9f, rects[2].r, rects[2].g, rects[2].b };
-					rects[3] = { 0.1f, -0.1f, 0.9f, -0.9f, rects[3].r, rects[3].g, rects[3].b };
+				else if (isMouseIn(rectsOrigin[i], x, y)) {
+					rects[i] = rectsOrigin[i];
+					break;
 				}
 			}
 			std::cout << "Right Button Down (" << x << ", " << y << ")\n";
@@ -126,7 +126,7 @@ bool isMouseIn(Rect& target, int x, int y)
 }
 
 void randColor(GLfloat& r, GLfloat& g, GLfloat& b) {
-	r = rand() % 100 / 100.0f;
-	g = rand() % 100 / 100.0f;
-	b = rand() % 100 / 100.0f;
+	r = rand() / static_cast<GLfloat>(RAND_MAX);
+	g = rand() / static_cast<GLfloat>(RAND_MAX);
+	b = rand() / static_cast<GLfloat>(RAND_MAX);
 }
