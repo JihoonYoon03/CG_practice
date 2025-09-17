@@ -68,7 +68,7 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설�
 
 GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 {
-	glClearColor(0.0f, 0.4f, 0.4f, 1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	for (auto& rect : rects) {
@@ -92,7 +92,9 @@ GLvoid Mouse(int button, int state, int x, int y) {
 	switch (button) {
 	case GLUT_LEFT_BUTTON:
 		if (state == GLUT_DOWN && rects.size() < 5) {
-
+			GLfloat xGL, yGL;
+			mPosToGL(x, y, xGL, yGL);
+			rects.push_back(Rect(xGL, yGL));
 		}
 		break;
 	case GLUT_RIGHT_BUTTON:
