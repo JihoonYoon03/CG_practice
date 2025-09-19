@@ -7,7 +7,11 @@ struct rtPos {
 	GLfloat x1, y1, x2, y2;
 };
 
-void randColor(GLfloat& r, GLfloat& g, GLfloat& b);
+struct ColorRGB {
+	GLfloat r, g, b;
+};
+
+void randColor(ColorRGB& color);
 void randRectPos(rtPos& pos);
 void randSquarePos(rtPos& pos);
 

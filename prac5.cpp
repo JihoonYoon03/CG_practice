@@ -18,21 +18,21 @@ GLvoid MouseMotion(int x, int y);
 class Rect {
 protected:
 	rtPos pos = { 0 };
-	GLfloat r = 0.0f, g = 0.0f, b = 0.0f;
+	ColorRGB color = { 0.0f, 0.0f, 0.0f };
 public:
 	Rect() {	// 기본 랜덤 사각형 생성
 		randSquarePos(pos);
-		randColor(r, g, b);
+		randColor(color);
 	}
 
 	Rect(GLfloat mx, GLfloat my) : pos(pos) {	// 마우스 좌표에 사각형 생성
 		pos.x1 = mx - defSize / 2; pos.y1 = my + defSize / 2;
 		pos.x2 = mx + defSize / 2; pos.y2 = my - defSize / 2;
-		randColor(r, g, b);
+		randColor(color);
 	}
 
 	void draw() {
-		glColor3f(r, g, b);
+		glColor3f(color.r, color.g, color.b);
 		glRectf(pos.x1, pos.y1, pos.x2, pos.y2);
 	}
 
@@ -47,6 +47,10 @@ public:
 	rtPos returnPos() {
 		return pos;
 	}
+
+	ColorRGB returnColor() {
+		return color;
+	}
 };
 
 class Eraser : public Rect {
@@ -54,6 +58,7 @@ public:
 	Eraser(GLfloat mx, GLfloat my) : Rect(mx, my) {
 		pos.x1 -= eraserSize / 2; pos.y1 += eraserSize / 2;
 		pos.x2 += eraserSize / 2; pos.y2 -= eraserSize / 2;
+		color = { 0.0f, 0.0f, 0.0f };
 	}
 
 	void drag(GLfloat mx, GLfloat my) {
@@ -64,10 +69,10 @@ public:
 		pos.x2 = mx + height; pos.y2 = my - height;
 	}
 
-	void erase(GLfloat nr, GLfloat ng, GLfloat nb) {
-		pos.x1 -= eraserSize / 4; pos.y1 =+ eraserSize / 4;
-		pos.x2 += eraserSize / 4; pos.y2 -= eraserSize / 4;
-		r = nr, g = ng, b = nb;
+	void erasing(ColorRGB target) {
+		pos.x1 -= 0.005f; pos.y1 += 0.005f;
+		pos.x2 += 0.005f; pos.y2 -= 0.005f;
+		color = target;
 	}
 };
 
@@ -96,6 +101,10 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설�
 	else
 		std::cout << "GLEW Initialized\n";
 
+	for (int i = 0; i < 40; i++) {
+		rects.push_back(Rect());
+	}
+
 	glutDisplayFunc(drawScene); // 출력 함수의 지정
 	glutReshapeFunc(Reshape); // 다시 그리기 함수 지정
 	glutKeyboardFunc(Keyboard); // 키보드 이벤트 콜백 함수 지정
@@ -106,15 +115,15 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설�
 
 GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 {
-	glClearColor(0.0f, 0.4f, 0.4f, 1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-
-	for (auto& er : eraser) {
-		er.draw();
-	}
 
 	for (auto& rect : rects) {
 		rect.draw();
+	}
+
+	for (auto& er : eraser) {
+		er.draw();
 	}
 
 	glutSwapBuffers();
@@ -128,6 +137,13 @@ GLvoid Reshape(int w, int h)
 GLvoid Keyboard(unsigned char key, int x, int y) {
 	switch (key) {
 	case 'r':
+		rects.clear();
+		eraserSize = 0.05f;
+		dragging = false;
+		for (int i = 0; i < 40; i++) {
+			rects.push_back(Rect());
+		}
+		glutPostRedisplay();
 		break;
 	}
 }
@@ -157,7 +173,7 @@ GLvoid Mouse(int button, int state, int x, int y) {
 	case GLUT_RIGHT_BUTTON:
 		if (state == GLUT_DOWN && rects.size() < 40) {
 			eraserSize = 0.05f - (40 - rects.size()) * 0.005f;
-			GLfloat xGL, yGL;
+			GLfloat xGL, yGL;						 
 			mPosToGL(x, y, xGL, yGL);
 			rects.push_back(Rect(xGL, yGL));
 		}
@@ -172,14 +188,14 @@ GLvoid MouseMotion(int x, int y) {
 		eraser[0].drag(mx, my);
 		for (auto it = rects.begin(); it != rects.end(); ) {
 			if (eraser[0].checkCollide(*it)) {
+				std::cout << "Collide!" << std::endl;
+				eraser[0].erasing((*it).returnColor());
 				it = rects.erase(it);
-				break;
 			}
 			else {
 				it++;
 			}
 		}
-		std::cout << "Drag!" << std::endl;
 		glutPostRedisplay();
 	}
 }
