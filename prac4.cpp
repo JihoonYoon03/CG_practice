@@ -19,10 +19,13 @@ class Rect {
 
 	// 위는 고정값, 아래는 변하는 값
 	rtPos pos = { 0 };
-	GLfloat delX = 0, delY = 0, r, g, b, width = 0.05f, height = 0.05f;
+	GLfloat pinPosX = 0, pinPosY = 0;
+	GLfloat delX = 0, delY = 0, r, g, b, width = 0.05f, height = 0.05f, angle = 45;
+	bool isRotate = false;
 public:
 
 	Rect(GLfloat mx, GLfloat my) : OriginX(mx), OriginY(my) {
+		std::cout << "OriginX: " << OriginX << ", OriginY: " << OriginY << std::endl;
 		pos.x1 = OriginX - defWidth / 2; pos.y1 = OriginY + defHeight / 2;
 		pos.x2 = OriginX + defWidth / 2; pos.y2 = OriginY - defHeight / 2;
 		randColor(rO, gO, bO);
@@ -49,31 +52,7 @@ public:
 		delY = -1;
 	}
 
-	void moveDiag() {
-		GLfloat edgeX = 1.0f - width, edgeY = 1.0f - height;
-
-		pos.x1 += delX; pos.x2 += delX;
-		if (pos.x1 < -edgeX) {
-			pos.x1 = -edgeX; pos.x2 = pos.x1 + defWidth;
-			delX = -delX;
-		}
-		else if (pos.x2 > edgeX) {
-			pos.x2 = edgeX; pos.x1 = pos.x2 - defWidth;
-			delX = -delX;
-		}
-
-		pos.y1 += delY; pos.y2 += delY;
-		if (pos.y1 > edgeY) {
-			pos.y1 = edgeY; pos.y2 = pos.y1 - defHeight;
-			delY = -delY;
-		}
-		else if (pos.y2 < -edgeY) {
-			pos.y2 = -edgeY; pos.y1 = pos.y2 + defHeight;
-			delY = -delY;
-		}
-	}
-
-	void moveZigzag() {
+	void moveDiag(bool Zigzag) {
 		bool atEdge = false;
 		GLfloat edgeX = 1.0f - width, edgeY = 1.0f - height;
 
@@ -88,8 +67,23 @@ public:
 			delX = -delX;
 			atEdge = true;
 		}
-		if (atEdge) {
+
+		// 지그재그
+		if (atEdge && Zigzag) {
 			pos.y1 += height * delY; pos.y2 += height * delY;
+			if (pos.y1 > edgeY) {
+				pos.y1 = edgeY; pos.y2 = pos.y1 - defHeight;
+				delY = -delY;
+			}
+			else if (pos.y2 < -edgeY) {
+				pos.y2 = -edgeY; pos.y1 = pos.y2 + defHeight;
+				delY = -delY;
+			}
+		}
+
+		// 대각선
+		else if (!Zigzag) {
+			pos.y1 += delY; pos.y2 += delY;
 			if (pos.y1 > edgeY) {
 				pos.y1 = edgeY; pos.y2 = pos.y1 - defHeight;
 				delY = -delY;
@@ -120,6 +114,44 @@ public:
 		rO = r, gO = g, bO = b;
 	}
 
+	bool checkRotate() {
+		return isRotate;
+	}
+
+	void startRotate() {
+		isRotate = true;
+		pinPosX = pos.x1 + defWidth / 2;
+		pinPosY = pos.y1 - defHeight / 2;
+	}
+
+	void endRotate() {
+		if (isRotate) {
+			isRotate = false;
+			angle = 45;
+			pos.x1 = pinPosX - defWidth / 2;
+			pos.y1 = pinPosY + defHeight / 2;
+			pos.x2 = pinPosX + defWidth / 2;
+			pos.y2 = pinPosY - defHeight / 2;
+		}
+	}
+
+	void rotating() {
+		if (isRotate) {
+			std::cout << "pinPosX: " << pinPosX << ", pinPosY: " << pinPosY << std::endl;
+			pos.x1 = pinPosX - defWidth / 2 * cos(angle / 180 * 3.14);
+			pos.y1 = pinPosY + defHeight / 2 * sin(angle / 180 * 3.14);
+			pos.x2 = pinPosX + defWidth / 2  * cos(angle / 180 * 3.14);
+			pos.y2 = pinPosY - defHeight / 2 * sin(angle / 180 * 3.14);
+			if (angle >= 405) {
+				angle = 45;
+				isRotate = false;
+			}
+			else {
+				angle += 5;
+			}
+		}
+	}
+
 	rtPos returnPos() {
 		return pos;
 	}
@@ -127,8 +159,8 @@ public:
 
 std::vector<Rect> rects;
 GLfloat lastX = 0, lastY = 0;
-bool playAnim = false, rollSize = false, rollColor = false, animDiag = false, animZigzag = false, timerOn = false;
-int clickIndex = -1;
+bool playAnim = false, rollSize = false, rollColor = false, animDiag = false, isAnimZigzag = false;
+int animHeadIndex = -1, animEndIndex = -1, tick = 0;
 
 void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 {
@@ -177,38 +209,33 @@ GLvoid Keyboard(unsigned char key, int x, int y) {
 	switch (key) {
 	case '1':
 		if (!animDiag) {
-			playAnim = true;
-			animDiag = true;
-			animZigzag = false;
+			isAnimZigzag = false;
 			for (auto& rect : rects) {
 				rect.setDeltaDiag();
 			}
-			if (!timerOn) {
-				timerOn = true;
+			if (!playAnim) {
+				playAnim = true;
 				glutTimerFunc(10, TimerFunction, 1);
 			}
 		}
 		else {
 			playAnim = false;
-			animDiag = false;
 		}
 		break;
 	case '2':
-		if (!animZigzag) {
-			playAnim = true;
-			animZigzag = true;
-			animDiag = false;
+		if (!isAnimZigzag) {
+			isAnimZigzag = true;
 			for (auto& rect : rects) {
 				rect.setDeltaZigzag();
 			}
-			if (!timerOn) {
-				timerOn = true;
+			if (!playAnim) {
+				playAnim = true;
 				glutTimerFunc(10, TimerFunction, 1);
 			}
 		}
 		else {
 			playAnim = false;
-			animZigzag = false;
+			isAnimZigzag = false;
 		}
 		break;
 	case '3':
@@ -220,7 +247,7 @@ GLvoid Keyboard(unsigned char key, int x, int y) {
 		}
 		else {
 			rollSize = false;
-			for(auto& rect : rects) {
+			for (auto& rect : rects) {
 				rect.resetWH();
 			}
 		}
@@ -241,6 +268,27 @@ GLvoid Keyboard(unsigned char key, int x, int y) {
 		}
 		glutPostRedisplay();
 		break;
+	case '5':
+		if (animHeadIndex == -1) {
+			// rotate는 다른 애니메이션 플래그에 영향 X, 다만 해당 애니메이션이 끝나거나 도중에 중단될 때 까진 다른 애니메이션 실행 X
+			animHeadIndex = rand() % 5;
+			animEndIndex = 4;
+			if (animEndIndex == animHeadIndex) animEndIndex = 3;
+
+			rects[animHeadIndex].startRotate();
+
+			if (!playAnim) {
+				playAnim = true;
+				glutTimerFunc(10, TimerFunction, 1);
+			}
+		}
+		else {
+			animHeadIndex = -1, animEndIndex = -1;
+			for (auto& rect : rects) {
+				rect.endRotate();
+			}
+		}
+		break;
 	case 'm':
 		for (auto& rect : rects) {
 			rect.resetPos();
@@ -253,6 +301,8 @@ GLvoid Keyboard(unsigned char key, int x, int y) {
 		break;
 	case 's':
 		playAnim = false;
+		isAnimZigzag = false;
+		animHeadIndex = -1, animEndIndex = -1;
 		break;
 	case 'q':
 		glutLeaveMainLoop();
@@ -276,18 +326,52 @@ GLvoid Mouse(int button, int state, int x, int y) {
 
 void TimerFunction(int value) {
 	if (playAnim) {
-		if (animDiag)
+		if (animHeadIndex != -1) {
+			tick = (tick + 1) % 10;
+			rects[animHeadIndex].rotating();	// head 먼저 애니메이션 시작
+
 			for (auto& rect : rects) {
-				rect.moveDiag();
+				if (&rect != &rects[animHeadIndex]) {
+					rect.rotating();	// isRotate 플래그가 켜진 사각형만 애니메이션
+				}
 			}
-		else if (animZigzag)
-			for (auto& rect : rects) {
-				rect.moveZigzag();
+
+			if (animEndIndex != -1) {
+				if (tick == 0) {
+					for (auto& rect : rects) {
+						if (rect.checkRotate() == false && &rect != &rects[animHeadIndex]) {
+							// 마지막 사각형이면 animEndIndex 초기화
+							if (&rect - &rects[0] == animEndIndex) {
+								animEndIndex = -1;
+							}
+
+							rect.startRotate();
+							break;
+						}
+					}
+				}
 			}
+			else {
+				bool checkEnd = true;
+				for (auto& rect : rects) {
+					if (rect.checkRotate()) {
+						checkEnd = false;
+						break;
+					}
+				}
+				if (checkEnd) {
+					animHeadIndex = -1;
+				}
+			}
+		}
+
+		for (auto& rect : rects) {
+			if (rect.checkRotate() == false) {
+				rect.moveDiag(isAnimZigzag);
+			}
+		}
+
 		glutTimerFunc(10, TimerFunction, 1);
-	}
-	else {
-		timerOn = false;
 	}
 	glutPostRedisplay();
 }
