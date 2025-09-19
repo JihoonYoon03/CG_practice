@@ -13,27 +13,29 @@ GLvoid Mouse(int button, int state, int x, int y);
 void TimerFunction(int value);
 
 class Rect {
-	rtPos pos = { 0 };
-	GLfloat r, g, b;
+	GLfloat rO, gO, bO;
 	GLfloat OriginX, OriginY;	// 사각형 시작 위치
 
-	GLfloat delX = 0, delY = 0, delSizeW = 0.1f, delSizeH = 0.1f;
+	// 위는 고정값, 아래는 변하는 값
+	rtPos pos = { 0 };
+	GLfloat delX = 0, delY = 0, r, g, b, width = 0.1f, height = 0.1f;
 public:
 
 	Rect(GLfloat mx, GLfloat my) : OriginX(mx), OriginY(my) {
-		pos.x1 = OriginX - delSizeW / 2; pos.y1 = OriginY + delSizeH / 2;
-		pos.x2 = OriginX + delSizeW / 2; pos.y2 = OriginY - delSizeH / 2;
-		randColor(r, g, b);
+		pos.x1 = OriginX - width / 2; pos.y1 = OriginY + height / 2;
+		pos.x2 = OriginX + width / 2; pos.y2 = OriginY - height / 2;
+		randColor(rO, gO, bO);
+		r = rO, g = gO, b = bO;
 	}
 
 	void draw() {
-		glColor3f(r, g, b);
+		glColor3f(rO, gO, bO);
 		glRectf(pos.x1, pos.y1, pos.x2, pos.y2);
 	}
 
 	void resetPos() {
-		pos.x1 = OriginX - delSizeW / 2; pos.y1 = OriginY + delSizeH / 2;
-		pos.x2 = OriginX + delSizeW / 2; pos.y2 = OriginY - delSizeH / 2;
+		pos.x1 = OriginX - width / 2; pos.y1 = OriginY + height / 2;
+		pos.x2 = OriginX + width / 2; pos.y2 = OriginY - height / 2;
 	}
 
 	void setDeltaDiag() {
@@ -41,26 +43,76 @@ public:
 		delY = rand() % 2 == 0 ? 0.01f : -0.01f;
 	}
 
-	void move() {
+	void setDeltaZigzag() {
+		delX = rand() % 2 == 0 ? 0.01f : -0.01f;
+		delY = -1;
+	}
+
+	void moveDiag() {
 		pos.x1 += delX; pos.x2 += delX;
 		if (pos.x1 < -1.0f) {
-			pos.x1 = -1.0f; pos.x2 = pos.x1 + delSizeW;
+			pos.x1 = -1.0f; pos.x2 = pos.x1 + width;
 			delX = -delX;
 		}
 		else if (pos.x2 > 1.0f) {
-			pos.x2 = 1.0f; pos.x1 = pos.x2 - delSizeW;
+			pos.x2 = 1.0f; pos.x1 = pos.x2 - width;
 			delX = -delX;
 		}
 
 		pos.y1 += delY; pos.y2 += delY;
 		if (pos.y2 < -1.0f) {
-			pos.y2 = -1.0f; pos.y1 = pos.y2 + delSizeH;
+			pos.y2 = -1.0f; pos.y1 = pos.y2 + height;
 			delY = -delY;
 		}
 		else if (pos.y1 > 1.0f) {
-			pos.y1 = 1.0f; pos.y2 = pos.y1 - delSizeH;
+			pos.y1 = 1.0f; pos.y2 = pos.y1 - height;
 			delY = -delY;
 		}
+	}
+
+	void moveZigzag() {
+		bool atEdge = false;
+		pos.x1 += delX; pos.x2 += delX;
+		if (pos.x1 < -1.0f) {
+			pos.x1 = -1.0f; pos.x2 = pos.x1 + width;
+			delX = -delX;
+			atEdge = true;
+		}
+		else if (pos.x2 > 1.0f) {
+			pos.x2 = 1.0f; pos.x1 = pos.x2 - width;
+			delX = -delX;
+			atEdge = true;
+		}
+		if (atEdge) {
+			pos.y1 += height * delY; pos.y2 += height * delY;
+			if (pos.y1 > 1.0f) {
+				pos.y1 = 1.0f; pos.y2 = pos.y1 - height;
+				delY = -delY;
+			}
+			else if (pos.y2 < -1.0f) {
+				pos.y2 = -1.0f; pos.y1 = pos.y2 + height;
+				delY = -delY;
+			}
+		}
+	}
+
+	void rollWH() {
+		width = rand() / static_cast<float>(RAND_MAX) * 0.3f + 0.05f;
+		height = rand() / static_cast<float>(RAND_MAX) * 0.3f + 0.05f;
+	}
+
+	void resetWH() {
+		width = 0.1f; height = 0.1f;
+	}
+
+	void rollColor() {
+		rO = rand() / static_cast<float>(RAND_MAX);
+		gO = rand() / static_cast<float>(RAND_MAX);
+		bO = rand() / static_cast<float>(RAND_MAX);
+	}
+
+	void resetColor() {
+		rO = r, gO = g, bO = b;
 	}
 
 	rtPos returnPos() {
@@ -70,7 +122,7 @@ public:
 
 std::vector<Rect> rects;
 GLfloat lastX = 0, lastY = 0;
-bool playAnim = false, rollSize = false, rollColor = false;
+bool playAnim = false, rollSize = false, rollColor = false, animDiag = false, animZigzag = false, timerOn = false;
 int clickIndex = -1;
 
 void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
@@ -119,20 +171,73 @@ GLvoid Reshape(int w, int h)
 GLvoid Keyboard(unsigned char key, int x, int y) {
 	switch (key) {
 	case '1':
-		if (!playAnim) {
+		if (!animDiag) {
 			playAnim = true;
+			animDiag = true;
+			animZigzag = false;
 			for (auto& rect : rects) {
 				rect.setDeltaDiag();
 			}
-			glutTimerFunc(10, TimerFunction, 1);
+			if (!timerOn) {
+				timerOn = true;
+				glutTimerFunc(10, TimerFunction, 1);
+			}
 		}
 		else {
 			playAnim = false;
+			animDiag = false;
 		}
 		break;
+	case '2':
+		if (!animZigzag) {
+			playAnim = true;
+			animZigzag = true;
+			animDiag = false;
+			for (auto& rect : rects) {
+				rect.setDeltaZigzag();
+			}
+			if (!timerOn) {
+				timerOn = true;
+				glutTimerFunc(10, TimerFunction, 1);
+			}
+		}
+		else {
+			playAnim = false;
+			animZigzag = false;
+		}
+		break;
+	case '3':
+		if (!rollSize) {
+			rollSize = true;
+			for (auto& rect : rects) {
+				rect.rollWH();
+			}
+		}
+		else {
+			rollSize = false;
+			for(auto& rect : rects) {
+				rect.resetWH();
+			}
+		}
+		glutPostRedisplay();
+		break;
+	case '4':
+		if (!rollColor) {
+			rollColor = true;
+			for (auto& rect : rects) {
+				rect.rollColor();
+			}
+		}
+		else {
+			rollColor = false;
+			for (auto& rect : rects) {
+				rect.resetColor();
+			}
+		}
+		glutPostRedisplay();
+		break;
 	case 'm':
-		for(auto& rect : rects) {
-			std::cout << "reset Rect pos\n";
+		for (auto& rect : rects) {
 			rect.resetPos();
 		}
 		glutPostRedisplay();
@@ -166,10 +271,18 @@ GLvoid Mouse(int button, int state, int x, int y) {
 
 void TimerFunction(int value) {
 	if (playAnim) {
-		for (auto& rect : rects) {
-			rect.move();
-		}
+		if (animDiag)
+			for (auto& rect : rects) {
+				rect.moveDiag();
+			}
+		else if (animZigzag)
+			for (auto& rect : rects) {
+				rect.moveZigzag();
+			}
 		glutTimerFunc(10, TimerFunction, 1);
+	}
+	else {
+		timerOn = false;
 	}
 	glutPostRedisplay();
 }
