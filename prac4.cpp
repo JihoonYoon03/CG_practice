@@ -10,18 +10,19 @@ GLvoid drawScene(GLvoid);
 GLvoid Reshape(int w, int h);
 GLvoid Keyboard(unsigned char key, int x, int y);
 GLvoid Mouse(int button, int state, int x, int y);
+void TimerFunction(int value);
 
 class Rect {
 	rtPos pos = { 0 };
 	GLfloat r, g, b;
 	GLfloat OriginX, OriginY;	// 사각형 시작 위치
 
-	GLfloat delX = 0, delY = 0;
+	GLfloat delX = 0, delY = 0, delSizeW = 0.1f, delSizeH = 0.1f;
 public:
 
 	Rect(GLfloat mx, GLfloat my) : OriginX(mx), OriginY(my) {
-		pos.x1 = OriginX - 0.05f; pos.y1 = OriginY + 0.05f;
-		pos.x2 = OriginX + 0.05f; pos.y2 = OriginY - 0.05f;
+		pos.x1 = OriginX - delSizeW / 2; pos.y1 = OriginY + delSizeH / 2;
+		pos.x2 = OriginX + delSizeW / 2; pos.y2 = OriginY - delSizeH / 2;
 		randColor(r, g, b);
 	}
 
@@ -31,8 +32,35 @@ public:
 	}
 
 	void resetPos() {
-		pos.x1 = OriginX - 0.05f; pos.y1 = OriginY + 0.05f;
-		pos.x2 = OriginX + 0.05f; pos.y2 = OriginY - 0.05f;
+		pos.x1 = OriginX - delSizeW / 2; pos.y1 = OriginY + delSizeH / 2;
+		pos.x2 = OriginX + delSizeW / 2; pos.y2 = OriginY - delSizeH / 2;
+	}
+
+	void setDeltaDiag() {
+		delX = rand() % 2 == 0 ? 0.01f : -0.01f;
+		delY = rand() % 2 == 0 ? 0.01f : -0.01f;
+	}
+
+	void move() {
+		pos.x1 += delX; pos.x2 += delX;
+		if (pos.x1 < -1.0f) {
+			pos.x1 = -1.0f; pos.x2 = pos.x1 + delSizeW;
+			delX = -delX;
+		}
+		else if (pos.x2 > 1.0f) {
+			pos.x2 = 1.0f; pos.x1 = pos.x2 - delSizeW;
+			delX = -delX;
+		}
+
+		pos.y1 += delY; pos.y2 += delY;
+		if (pos.y2 < -1.0f) {
+			pos.y2 = -1.0f; pos.y1 = pos.y2 + delSizeH;
+			delY = -delY;
+		}
+		else if (pos.y1 > 1.0f) {
+			pos.y1 = 1.0f; pos.y2 = pos.y1 - delSizeH;
+			delY = -delY;
+		}
 	}
 
 	rtPos returnPos() {
@@ -42,7 +70,7 @@ public:
 
 std::vector<Rect> rects;
 GLfloat lastX = 0, lastY = 0;
-bool playAnim = false;
+bool playAnim = false, rollSize = false, rollColor = false;
 int clickIndex = -1;
 
 void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
@@ -90,6 +118,18 @@ GLvoid Reshape(int w, int h)
 
 GLvoid Keyboard(unsigned char key, int x, int y) {
 	switch (key) {
+	case '1':
+		if (!playAnim) {
+			playAnim = true;
+			for (auto& rect : rects) {
+				rect.setDeltaDiag();
+			}
+			glutTimerFunc(10, TimerFunction, 1);
+		}
+		else {
+			playAnim = false;
+		}
+		break;
 	case 'm':
 		for(auto& rect : rects) {
 			std::cout << "reset Rect pos\n";
@@ -122,4 +162,14 @@ GLvoid Mouse(int button, int state, int x, int y) {
 	case GLUT_RIGHT_BUTTON:
 		break;
 	}
+}
+
+void TimerFunction(int value) {
+	if (playAnim) {
+		for (auto& rect : rects) {
+			rect.move();
+		}
+		glutTimerFunc(10, TimerFunction, 1);
+	}
+	glutPostRedisplay();
 }
