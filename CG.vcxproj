@@ -138,6 +138,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="prac4.cpp" />
+    <ClCompile Include="prac5.cpp" />
     <ClCompile Include="tools.cpp" />
   </ItemGroup>
   <ItemGroup>
