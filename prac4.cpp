@@ -95,6 +95,11 @@ GLvoid Keyboard(unsigned char key, int x, int y) {
 			std::cout << "reset Rect pos\n";
 			rect.resetPos();
 		}
+		glutPostRedisplay();
+		break;
+	case 'r':
+		rects.clear();
+		glutPostRedisplay();
 		break;
 	case 's':
 		playAnim = false;
