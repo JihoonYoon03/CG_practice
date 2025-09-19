@@ -15,27 +15,28 @@ void TimerFunction(int value);
 class Rect {
 	GLfloat rO, gO, bO;
 	GLfloat OriginX, OriginY;	// 사각형 시작 위치
+	GLfloat defWidth = 0.1f, defHeight = 0.1f;
 
 	// 위는 고정값, 아래는 변하는 값
 	rtPos pos = { 0 };
-	GLfloat delX = 0, delY = 0, r, g, b, width = 0.1f, height = 0.1f;
+	GLfloat delX = 0, delY = 0, r, g, b, width = 0.05f, height = 0.05f;
 public:
 
 	Rect(GLfloat mx, GLfloat my) : OriginX(mx), OriginY(my) {
-		pos.x1 = OriginX - width / 2; pos.y1 = OriginY + height / 2;
-		pos.x2 = OriginX + width / 2; pos.y2 = OriginY - height / 2;
+		pos.x1 = OriginX - defWidth / 2; pos.y1 = OriginY + defHeight / 2;
+		pos.x2 = OriginX + defWidth / 2; pos.y2 = OriginY - defHeight / 2;
 		randColor(rO, gO, bO);
 		r = rO, g = gO, b = bO;
 	}
 
 	void draw() {
 		glColor3f(rO, gO, bO);
-		glRectf(pos.x1, pos.y1, pos.x2, pos.y2);
+		glRectf(pos.x1 - width, pos.y1 + height, pos.x2 + width, pos.y2 - height);
 	}
 
 	void resetPos() {
-		pos.x1 = OriginX - width / 2; pos.y1 = OriginY + height / 2;
-		pos.x2 = OriginX + width / 2; pos.y2 = OriginY - height / 2;
+		pos.x1 = OriginX - defWidth / 2; pos.y1 = OriginY + defHeight / 2;
+		pos.x2 = OriginX + defWidth / 2; pos.y2 = OriginY - defHeight / 2;
 	}
 
 	void setDeltaDiag() {
@@ -49,60 +50,64 @@ public:
 	}
 
 	void moveDiag() {
+		GLfloat edgeX = 1.0f - width, edgeY = 1.0f - height;
+
 		pos.x1 += delX; pos.x2 += delX;
-		if (pos.x1 < -1.0f) {
-			pos.x1 = -1.0f; pos.x2 = pos.x1 + width;
+		if (pos.x1 < -edgeX) {
+			pos.x1 = -edgeX; pos.x2 = pos.x1 + defWidth;
 			delX = -delX;
 		}
-		else if (pos.x2 > 1.0f) {
-			pos.x2 = 1.0f; pos.x1 = pos.x2 - width;
+		else if (pos.x2 > edgeX) {
+			pos.x2 = edgeX; pos.x1 = pos.x2 - defWidth;
 			delX = -delX;
 		}
 
 		pos.y1 += delY; pos.y2 += delY;
-		if (pos.y2 < -1.0f) {
-			pos.y2 = -1.0f; pos.y1 = pos.y2 + height;
+		if (pos.y1 > edgeY) {
+			pos.y1 = edgeY; pos.y2 = pos.y1 - defHeight;
 			delY = -delY;
 		}
-		else if (pos.y1 > 1.0f) {
-			pos.y1 = 1.0f; pos.y2 = pos.y1 - height;
+		else if (pos.y2 < -edgeY) {
+			pos.y2 = -edgeY; pos.y1 = pos.y2 + defHeight;
 			delY = -delY;
 		}
 	}
 
 	void moveZigzag() {
 		bool atEdge = false;
+		GLfloat edgeX = 1.0f - width, edgeY = 1.0f - height;
+
 		pos.x1 += delX; pos.x2 += delX;
-		if (pos.x1 < -1.0f) {
-			pos.x1 = -1.0f; pos.x2 = pos.x1 + width;
+		if (pos.x1 < -edgeX) {
+			pos.x1 = -edgeX; pos.x2 = pos.x1 + defWidth;
 			delX = -delX;
 			atEdge = true;
 		}
-		else if (pos.x2 > 1.0f) {
-			pos.x2 = 1.0f; pos.x1 = pos.x2 - width;
+		else if (pos.x2 > edgeX) {
+			pos.x2 = edgeX; pos.x1 = pos.x2 - defWidth;
 			delX = -delX;
 			atEdge = true;
 		}
 		if (atEdge) {
 			pos.y1 += height * delY; pos.y2 += height * delY;
-			if (pos.y1 > 1.0f) {
-				pos.y1 = 1.0f; pos.y2 = pos.y1 - height;
+			if (pos.y1 > edgeY) {
+				pos.y1 = edgeY; pos.y2 = pos.y1 - defHeight;
 				delY = -delY;
 			}
-			else if (pos.y2 < -1.0f) {
-				pos.y2 = -1.0f; pos.y1 = pos.y2 + height;
+			else if (pos.y2 < -edgeY) {
+				pos.y2 = -edgeY; pos.y1 = pos.y2 + defHeight;
 				delY = -delY;
 			}
 		}
 	}
 
 	void rollWH() {
-		width = rand() / static_cast<float>(RAND_MAX) * 0.3f + 0.05f;
-		height = rand() / static_cast<float>(RAND_MAX) * 0.3f + 0.05f;
+		width = rand() / static_cast<float>(RAND_MAX) * 0.2f + 0.05f;
+		height = rand() / static_cast<float>(RAND_MAX) * 0.2f + 0.05f;
 	}
 
 	void resetWH() {
-		width = 0.1f; height = 0.1f;
+		width = 0.05f; height = 0.05f;
 	}
 
 	void rollColor() {
