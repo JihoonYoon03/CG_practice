@@ -42,7 +42,7 @@ public:
 
 std::vector<Rect> rects;
 GLfloat lastX = 0, lastY = 0;
-bool dragging = false;
+bool playAnim = false;
 int clickIndex = -1;
 
 void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
@@ -96,6 +96,12 @@ GLvoid Keyboard(unsigned char key, int x, int y) {
 			rect.resetPos();
 		}
 		break;
+	case 's':
+		playAnim = false;
+		break;
+	case 'q':
+		glutLeaveMainLoop();
+		return;
 	}
 }
 
