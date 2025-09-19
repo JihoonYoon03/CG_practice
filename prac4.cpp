@@ -14,20 +14,25 @@ GLvoid Mouse(int button, int state, int x, int y);
 class Rect {
 	rtPos pos = { 0 };
 	GLfloat r, g, b;
-	GLfloat OriginX, OriginY;
+	GLfloat OriginX, OriginY;	// 사각형 시작 위치
 
 	GLfloat delX = 0, delY = 0;
 public:
 
 	Rect(GLfloat mx, GLfloat my) : OriginX(mx), OriginY(my) {
-		pos.x1 = mx - 0.05f; pos.y1 = my + 0.05f;
-		pos.x2 = mx + 0.05f; pos.y2 = my - 0.05f;
+		pos.x1 = OriginX - 0.05f; pos.y1 = OriginY + 0.05f;
+		pos.x2 = OriginX + 0.05f; pos.y2 = OriginY - 0.05f;
 		randColor(r, g, b);
 	}
 
 	void draw() {
 		glColor3f(r, g, b);
 		glRectf(pos.x1, pos.y1, pos.x2, pos.y2);
+	}
+
+	void resetPos() {
+		pos.x1 = OriginX - 0.05f; pos.y1 = OriginY + 0.05f;
+		pos.x2 = OriginX + 0.05f; pos.y2 = OriginY - 0.05f;
 	}
 
 	rtPos returnPos() {
@@ -85,6 +90,12 @@ GLvoid Reshape(int w, int h)
 
 GLvoid Keyboard(unsigned char key, int x, int y) {
 	switch (key) {
+	case 'm':
+		for(auto& rect : rects) {
+			std::cout << "reset Rect pos\n";
+			rect.resetPos();
+		}
+		break;
 	}
 }
 
