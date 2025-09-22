@@ -20,7 +20,7 @@ protected:
 	ColorRGB color = { 0.0f, 0.0f, 0.0f };
 public:
 	Rect() {	// 기본 랜덤 사각형 생성
-		randSquarePos(pos, rand() / static_cast<GLfloat>(RAND_MAX) * 0.2);
+		randSquarePos(pos, (rand() / static_cast<GLfloat>(RAND_MAX) + 0.4f) * 0.2);
 		randColor(color);
 	}
 
@@ -107,6 +107,8 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설�
 	else
 		std::cout << "GLEW Initialized\n";
 
+	srand((unsigned int)time(NULL));
+
 	int cap = 5 + rand() % 6;
 
 	for (int i = 0; i < cap; i++)
@@ -192,7 +194,7 @@ void randomParticles(Rect& rect) {
 
 	std::cout << "pos: " << centerX << ", " << centerY << std::endl;
 
-	switch (3) {
+	switch (rand() % 4) {
 	case 0:
 		// 상하좌우 4방향
 
