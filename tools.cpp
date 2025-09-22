@@ -6,12 +6,12 @@ void randColor(ColorRGB& color) {
 	color.b = rand() / static_cast<GLfloat>(RAND_MAX);
 }
 
-void randSquarePos(rtPos& pos) {
+void randSquarePos(rtPos& pos, GLfloat offset) {
 	pos.x1 = rand() / static_cast<GLfloat>(RAND_MAX) * 2.0f - 1.0f;
 	pos.y1 = rand() / static_cast<GLfloat>(RAND_MAX) * 2.0f - 1.0f;
 	
-	pos.x2 = pos.x1 + 0.05f;
-	pos.y2 = pos.y1 - 0.05f;
+	pos.x2 = pos.x1 + offset;
+	pos.y2 = pos.y1 - offset;
 }
 
 void randRectPos(rtPos& pos) {

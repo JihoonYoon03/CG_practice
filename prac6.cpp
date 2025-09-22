@@ -16,7 +16,7 @@ protected:
 	ColorRGB color = { 0.0f, 0.0f, 0.0f };
 public:
 	Rect() {	// 기본 랜덤 사각형 생성
-		randSquarePos(pos);
+		randSquarePos(pos, rand() / static_cast<GLfloat>(RAND_MAX) * 0.2);
 		randColor(color);
 	}
 
@@ -25,6 +25,9 @@ public:
 		glRectf(pos.x1, pos.y1, pos.x2, pos.y2);
 	}
 };
+
+
+std::vector<Rect> rects;
 
 void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 {
@@ -45,6 +48,11 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설�
 	else
 		std::cout << "GLEW Initialized\n";
 
+	int cap = 5 + rand() % 6;
+
+	for (int i = 0; i < cap; i++)
+		rects.push_back(Rect());
+
 
 	glutDisplayFunc(drawScene); // 출력 함수의 지정
 	glutReshapeFunc(Reshape); // 다시 그리기 함수 지정
@@ -57,6 +65,9 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
+	for (auto& rect : rects) {
+		rect.draw();
+	}
 
 	glutSwapBuffers();
 }

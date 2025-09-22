@@ -13,7 +13,7 @@ struct ColorRGB {
 
 void randColor(ColorRGB& color);
 void randRectPos(rtPos& pos);
-void randSquarePos(rtPos& pos);
+void randSquarePos(rtPos& pos, GLfloat offset);
 
 void mPosToGL(int mx, int my, GLfloat& xGL, GLfloat& yGL);
 bool isMouseIn(rtPos& pos, int mx, int my);
