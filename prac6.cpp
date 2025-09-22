@@ -192,19 +192,43 @@ void randomParticles(Rect& rect) {
 
 	std::cout << "pos: " << centerX << ", " << centerY << std::endl;
 
-	switch (0) {
+	switch (3) {
 	case 0:
 		// 상하좌우 4방향
 
 		for (int i = 0; i < 4; i++)
-			particles.push_back(Particle(centerX, centerY, scaleX, scaleY, (i == 0) - (i == 1), (i == 2) - (i == 3), color));
+			particles.push_back(Particle(centerX, centerY, scaleX, scaleY, (i == 0) - (i == 1), (i == 2) - (i == 3), color));	// 1, 0 / -1, 0 / 0, 1 / 0, -1
 
 		break;
 	case 1:
+		// 대각선 4방향
+
+		for (int i = 0; i < 4; i++)
+			particles.push_back(Particle(centerX, centerY, scaleX, scaleY, (i < 2 ? 1 : -1), (i % 3 == 0 ? 1 : -1), color)); // 1, 1 / 1, -1 / -1, -1 / -1, 1
+
 		break;
 	case 2:
+	{
+		// 다같이 한뱡향
+
+		GLfloat dirX = rand() / static_cast<GLfloat>(RAND_MAX) * 2.0f - 1.0f;
+		GLfloat dirY = rand() / static_cast<GLfloat>(RAND_MAX) * 2.0f - 1.0f;
+		for (int i = 0; i < 4; i++) {
+			GLfloat offset = (rand() / static_cast<GLfloat>(RAND_MAX) * 2.0f - 1.0f) * 0.05f;
+			particles.push_back(Particle(centerX + offset, centerY + offset, scaleX, scaleY, dirX, dirY, color));
+		}
+
 		break;
+	}
 	case 3:
+		// 8방향
+
+		for (int i = 0; i < 4; i++)
+			particles.push_back(Particle(centerX, centerY, scaleX, scaleY, (i == 0) - (i == 1), (i == 2) - (i == 3), color)); // 1, 0 / -1, 0 / 0, 1 / 0, -1
+
+		for (int i = 0; i < 4; i++)
+			particles.push_back(Particle(centerX, centerY, scaleX, scaleY, (i < 2 ? 1 : -1), (i % 3 == 0 ? 1 : -1), color)); // 1, 1 / 1, -1 / -1, -1 / -1, 1
+
 		break;
 	}
 }
