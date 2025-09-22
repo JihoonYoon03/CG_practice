@@ -20,6 +20,48 @@ public:
 		randColor(color);
 	}
 
+	bool clicked(int mx, int my) {
+		return isMouseIn(pos, mx, my);
+	}
+
+	void draw() {
+		glColor3f(color.r, color.g, color.b);
+		glRectf(pos.x1, pos.y1, pos.x2, pos.y2);
+	}
+
+	rtPos returnPos(rtPos& outPos) {
+		outPos = pos;
+	}
+
+	ColorRGB returnColor(ColorRGB& outColor) {
+		outColor = color;
+	}
+};
+
+class Particle {
+	rtPos pos = { 0 };
+	ColorRGB color;
+
+	GLfloat dx, dy, speed = 0.01f;
+public:
+	// 위치, 크기, 방향벡터, 색깔 입력
+	Particle(GLfloat Xpos, GLfloat Ypos, GLfloat scale, GLfloat dx, GLfloat dy, ColorRGB colorIn) : color(colorIn) {
+		pos.x1 = Xpos - scale / 2.0f;
+		pos.y1 = Ypos + scale / 2.0f;
+		pos.x2 = Xpos + scale / 2.0f;
+		pos.y2 = Ypos - scale / 2.0f;
+		GLfloat len = sqrt(dx * dx + dy * dy);
+		this->dx = dx / len;
+		this->dy = dy / len;
+	}
+
+	void move() {
+		pos.x1 += dx * speed;
+		pos.x2 += dx * speed;
+		pos.y1 += dy * speed;
+		pos.y2 += dy * speed;
+	}
+
 	void draw() {
 		glColor3f(color.r, color.g, color.b);
 		glRectf(pos.x1, pos.y1, pos.x2, pos.y2);
@@ -81,7 +123,13 @@ GLvoid Mouse(int button, int state, int x, int y) {
 	switch (button) {
 	case GLUT_LEFT_BUTTON:
 		if (state == GLUT_DOWN) {
-			
+			for (auto& rect : rects) {
+				if (rect.clicked(x, y)) {
+					std::cout << "Left Click!" << std::endl;
+					glutPostRedisplay();
+					break;
+				}
+			}
 		}
 		break;
 	}
