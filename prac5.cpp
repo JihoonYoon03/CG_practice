@@ -172,7 +172,9 @@ GLvoid Mouse(int button, int state, int x, int y) {
 		break;
 	case GLUT_RIGHT_BUTTON:
 		if (state == GLUT_DOWN && rects.size() < 40) {
-			eraserSize = 0.05f - (40 - rects.size()) * 0.005f;
+			if (0.05f - rects.size() * 0.005f > 0.01f)
+				eraserSize = 0.05f - rects.size() * 0.005f;
+			std::cout << "Eraser size: " << eraserSize << std::endl;
 			GLfloat xGL, yGL;						 
 			mPosToGL(x, y, xGL, yGL);
 			rects.push_back(Rect(xGL, yGL));
