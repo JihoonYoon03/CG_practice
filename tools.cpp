@@ -1,41 +1,31 @@
 #include "tools.h"
 
-void randColor(ColorRGB& color) {
+ColorRGB randColor() {
+	ColorRGB color;
 	color.r = rand() / static_cast<GLfloat>(RAND_MAX);
 	color.g = rand() / static_cast<GLfloat>(RAND_MAX);
 	color.b = rand() / static_cast<GLfloat>(RAND_MAX);
+	return color;
 }
 
-void randSquarePos(rtPos& pos, GLfloat offset) {
+rtPos randSquarePos(GLfloat offset) {
+	rtPos pos;
 	pos.x1 = rand() / static_cast<GLfloat>(RAND_MAX) * 2.0f - 1.0f;
 	pos.y1 = rand() / static_cast<GLfloat>(RAND_MAX) * 2.0f - 1.0f;
-	
+
 	pos.x2 = pos.x1 + offset;
 	pos.y2 = pos.y1 - offset;
+	return pos;
 }
 
-void randRectPos(rtPos& pos) {
-	GLfloat randX[2], randY[2];
-	for (int i = 0; i < 2; i++) {
-		randX[i] = rand() / static_cast<GLfloat>(RAND_MAX) * 2.0f - 1.0f;
-		randY[i] = rand() / static_cast<GLfloat>(RAND_MAX) * 2.0f - 1.0f;
-	}
-	if (randX[0] < randX[1]) {
-		pos.x1 = randX[0];
-		pos.x2 = randX[1];
-	}
-	else {
-		pos.x1 = randX[1];
-		pos.x2 = randX[0];
-	}
-	if (randY[0] > randY[1]) {
-		pos.y1 = randY[0];
-		pos.y2 = randY[1];
-	}
-	else {
-		pos.y1 = randY[1];
-		pos.y2 = randY[0];
-	}
+rtPos randRectPos(GLfloat offset) {
+	rtPos pos;
+	pos.x1 = rand() / static_cast<GLfloat>(RAND_MAX) * 2.0f - 1.0f;
+	pos.y1 = rand() / static_cast<GLfloat>(RAND_MAX) * 2.0f - 1.0f;
+
+	pos.x2 = pos.x1 + (rand() / static_cast<GLfloat>(RAND_MAX) * 0.1f + offset);
+	pos.y2 = pos.y1 - (rand() / static_cast<GLfloat>(RAND_MAX) * 0.1f + offset);
+	return pos;
 }
 
 void mPosToGL(int mx, int my, GLfloat& xGL, GLfloat& yGL)
