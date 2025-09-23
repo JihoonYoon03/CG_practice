@@ -13,7 +13,7 @@ GLvoid Mouse(int button, int state, int x, int y);
 void TimerFunction(int value);
 
 class Rect {
-	GLfloat rO, gO, bO;
+	ColorRGB color;
 	GLfloat OriginX, OriginY;	// 사각형 시작 위치
 	GLfloat defWidth = 0.1f, defHeight = 0.1f;
 
@@ -28,12 +28,12 @@ public:
 		std::cout << "OriginX: " << OriginX << ", OriginY: " << OriginY << std::endl;
 		pos.x1 = OriginX - defWidth / 2; pos.y1 = OriginY + defHeight / 2;
 		pos.x2 = OriginX + defWidth / 2; pos.y2 = OriginY - defHeight / 2;
-		randColor(rO, gO, bO);
-		r = rO, g = gO, b = bO;
+		randColor(color);
+		r = color.r, g = color.g, b = color.b;
 	}
 
 	void draw() {
-		glColor3f(rO, gO, bO);
+		glColor3f(color.r, color.g, color.b);
 		glRectf(pos.x1 - width, pos.y1 + height, pos.x2 + width, pos.y2 - height);
 	}
 
@@ -105,13 +105,11 @@ public:
 	}
 
 	void rollColor() {
-		rO = rand() / static_cast<float>(RAND_MAX);
-		gO = rand() / static_cast<float>(RAND_MAX);
-		bO = rand() / static_cast<float>(RAND_MAX);
+		randColor(color);
 	}
 
 	void resetColor() {
-		rO = r, gO = g, bO = b;
+		color.r = r, color.g = g, color.b = b;
 	}
 
 	bool checkRotate() {

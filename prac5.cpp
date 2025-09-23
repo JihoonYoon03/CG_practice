@@ -21,7 +21,7 @@ protected:
 	ColorRGB color = { 0.0f, 0.0f, 0.0f };
 public:
 	Rect() {	// 기본 랜덤 사각형 생성
-		randSquarePos(pos);
+		randSquarePos(pos, 0.05f);
 		randColor(color);
 	}
 
