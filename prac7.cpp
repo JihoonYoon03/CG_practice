@@ -18,12 +18,13 @@ class Board;
 class Rect {
 	friend class Board;
 
+protected:
 	rtPos pos = { 0 };
 	ColorRGB color = { 0.0f, 0.0f, 0.0f };
 public:
 	Rect(rtPos p, ColorRGB c) : pos(p), color(c) {}
 
-	void draw() {
+	virtual void draw() {
 		glColor3f(color.r, color.g, color.b);
 		glRectf(pos.x1, pos.y1, pos.x2, pos.y2);
 	}
@@ -54,13 +55,61 @@ Rect dataSet[10] = {
 };
 
 
+class Puzzle : public Rect {
+	friend class Board;
+
+	GLfloat delX = 0, delY = 0;
+
+public:
+	Puzzle(rtPos p, ColorRGB c) : Rect(p, c) {}
+
+	void draw() override {
+		glColor3f(color.r, color.g, color.b);
+		glRectf(pos.x1 + delX, pos.y1 + delY, pos.x2 + delX, pos.y2 + delY);
+	}
+	
+	void drag(GLfloat mx, GLfloat my) {
+		delX = mx;
+		delY = my;
+	}
+
+	void stopDrag(bool isIn, rtPos newPos = { 0 }) {
+		if (isIn) {
+			pos.x1 = newPos.x1;
+			pos.x2 = newPos.x2;
+			pos.y1 = newPos.y1;
+			pos.y2 = newPos.y2;
+		}
+		delX = 0;
+		delY = 0;
+	}
+
+	rtPos returnPos() {
+		return pos;
+	}
+};
+
 class Board {
 	std::vector<Rect> rects;
+	std::vector<Puzzle> puzzles;
 
 public:
 	Board() {
-		for(int i = 0; i < 10; i++) {
+		for (int i = 0; i < 10; i++) {
 			rects.push_back(dataSet[i]);
+		}
+
+		for (int i = 0; i < 10; i++) {
+			GLfloat offsetX = rand() / static_cast<GLfloat>(RAND_MAX) * 0.25f;
+			GLfloat offsetY = (rand() / static_cast<GLfloat>(RAND_MAX) - 0.5f) * 0.5f;
+			
+			rtPos adjustedPos = dataSet[i].pos;
+			adjustedPos.x1 += offsetX + 1.0f;
+			adjustedPos.x2 += offsetX + 1.0f;
+			adjustedPos.y2 += offsetY;
+			adjustedPos.y1 += offsetY;
+
+			puzzles.push_back({ adjustedPos, dataSet[i].color });
 		}
 	}
 
@@ -71,6 +120,12 @@ public:
 		}
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glColor3f(0.2f, 0.2f, 0.2f);
+		glRectf(-0.01f, 1.0f, 0.01f, -1.0f);
+
+		for (auto& puzzle : puzzles) {
+			puzzle.draw();
+		}
 	}
 
 	void reroll() {
