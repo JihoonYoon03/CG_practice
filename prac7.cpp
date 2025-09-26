@@ -95,22 +95,7 @@ class Board {
 
 public:
 	Board() {
-		for (int i = 0; i < 10; i++) {
-			rects.push_back(dataSet[i]);
-		}
-
-		for (int i = 0; i < 10; i++) {
-			GLfloat offsetX = rand() / static_cast<GLfloat>(RAND_MAX) * 0.25f;
-			GLfloat offsetY = (rand() / static_cast<GLfloat>(RAND_MAX) - 0.5f) * 0.5f;
-			
-			rtPos adjustedPos = dataSet[i].pos;
-			adjustedPos.x1 += offsetX + 1.0f;
-			adjustedPos.x2 += offsetX + 1.0f;
-			adjustedPos.y2 += offsetY;
-			adjustedPos.y1 += offsetY;
-
-			puzzles.push_back({ adjustedPos, dataSet[i].color });
-		}
+		this->reroll();
 	}
 
 	void draw() {
@@ -130,8 +115,22 @@ public:
 
 	void reroll() {
 		rects.clear();
+		puzzles.clear();
 		for (int i = 0; i < 10; i++) {
 			rects.push_back(dataSet[i]);
+		}
+		
+		for (int i = 0; i < 10; i++) {
+			GLfloat offsetX = rand() / static_cast<GLfloat>(RAND_MAX) * 0.25f;
+			GLfloat offsetY = (rand() / static_cast<GLfloat>(RAND_MAX) - 0.5f) * 0.5f;
+
+			rtPos adjustedPos = dataSet[i].pos;
+			adjustedPos.x1 += offsetX + 1.0f;
+			adjustedPos.x2 += offsetX + 1.0f;
+			adjustedPos.y2 += offsetY;
+			adjustedPos.y1 += offsetY;
+
+			puzzles.push_back({ adjustedPos, dataSet[i].color });
 		}
 	}
 };
