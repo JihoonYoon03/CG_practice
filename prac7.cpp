@@ -29,10 +29,41 @@ public:
 	}
 };
 
+Rect dataSet[10] = {
+	// 머리 부분 (오른쪽 끝)
+	{{-0.3f, 0.8f, -0.1f, 0.6f}, {0.2f, 0.8f, 0.3f}},
+
+	// 머리
+	{{-0.5f, 0.8f, -0.3f, 0.6f}, {0.9f, 0.1f, 0.7f}},
+
+	// 목
+	{{-0.5f, 0.6f, -0.3f, 0.4f}, {0.1f, 0.6f, 0.9f}},  
+	{{-0.5f, 0.4f, -0.3f, 0.2f}, {0.3f, 0.9f, 0.2f}},  
+
+	// 몸통
+	{{-0.9f, 0.2f, -0.3f, 0.0f}, {0.7f, 0.4f, 0.1f}},  
+	{{-0.9f, 0.0f, -0.5f, -0.2f}, {0.8f, 0.2f, 0.9f}}, 
+
+	// 앞다리
+	{{-0.5f, 0.0f, -0.3f, -0.4f}, {0.9f, 0.8f, 0.1f}}, 
+	{{-0.5f, -0.4f, -0.3f, -0.8f}, {0.4f, 0.1f, 0.8f}},
+
+	// 뒷다리
+	{{-0.9f, -0.2f, -0.7f, -0.4f}, {0.6f, 0.3f, 0.5f}},
+	{{-0.9f, -0.4f, -0.7f, -0.8f}, {0.2f, 0.5f, 0.7f}} 
+};
+
+
 class Board {
 	std::vector<Rect> rects;
 
 public:
+	Board() {
+		for(int i = 0; i < 10; i++) {
+			rects.push_back(dataSet[i]);
+		}
+	}
+
 	void draw() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		for (auto& rect : rects) {
@@ -44,29 +75,9 @@ public:
 
 	void reroll() {
 		rects.clear();
-		rtPos basePos = {
-			rand() / static_cast<GLfloat>(RAND_MAX) - 1.0f,
-			rand() / static_cast<GLfloat>(RAND_MAX) - 1.0f,
-			0, 0
-		};
-		std::cout << "Base Pos: " << basePos.x1 << ", " << basePos.y1 << std::endl;
-		basePos.x2 = basePos.x1 + 0.15f >= 0 ? -0.01f : basePos.x1 + 0.15f;
-		basePos.y2 = basePos.y1 - 0.15f <= -1.0f ? -1.0f : basePos.y1 - 0.15f;
-
-		rects.push_back(Rect(basePos, randColor()));
-
-		/*
-		for (int i = 1; i < 10; i++) {
-			rtPos randPos = randRectPos(0.1f);
-			ColorRGB randRGB = randColor();
-			if (i != 0) {
-
-			}
-			else
-				rects.push_back(Rect(randPos, randRGB));
-
+		for (int i = 0; i < 10; i++) {
+			rects.push_back(dataSet[i]);
 		}
-		*/
 	}
 };
 
