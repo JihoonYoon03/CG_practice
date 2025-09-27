@@ -12,11 +12,13 @@ constexpr auto winHeight = 600;
 GLvoid drawScene(GLvoid);
 GLvoid Reshape(int w, int h);
 GLvoid Mouse(int button, int state, int x, int y);
+GLvoid Motion(int x, int y);
 
 class Board;
 
 class Rect {
 	friend class Board;
+	int index = -1;
 
 protected:
 	rtPos pos = { 0 };
@@ -93,6 +95,9 @@ class Board {
 	std::vector<Rect> rects;
 	std::vector<Puzzle> puzzles;
 
+	int selectedPuzzleIdx = -1;
+	GLfloat mouseX = 0, mouseY = 0;
+
 public:
 	Board() {
 		this->reroll();
@@ -118,8 +123,11 @@ public:
 		puzzles.clear();
 		for (int i = 0; i < 10; i++) {
 			rects.push_back(dataSet[i]);
+			rects[i].index = i;
 		}
 		
+
+		// 퍼즐은 오른쪽에 약간 랜덤하게 배치
 		for (int i = 0; i < 10; i++) {
 			GLfloat offsetX = rand() / static_cast<GLfloat>(RAND_MAX) * 0.25f;
 			GLfloat offsetY = (rand() / static_cast<GLfloat>(RAND_MAX) - 0.5f) * 0.5f;
@@ -131,11 +139,45 @@ public:
 			adjustedPos.y1 += offsetY;
 
 			puzzles.push_back({ adjustedPos, dataSet[i].color });
+			puzzles[i].index = i;
+		}
+	}
+
+	bool clickPuzzle(int mx, int my) {
+		bool correctClick = false;
+		for (auto& puzzle : puzzles) {
+			if (isMouseIn(puzzle.pos, mx, my)) {
+				// 드래그 시작
+				selectedPuzzleIdx = &puzzle - &puzzles[0];
+				correctClick = true;
+				mouseX = mx;
+				mouseY = my;
+				std::cout << "Puzzle pos x: " << puzzle.pos.x1 << ", y: " << puzzle.pos.y1 << std::endl;
+			}
+		}
+
+		return correctClick;
+	}
+
+	bool dragPuzzle(GLfloat mx, GLfloat my) {
+		if (selectedPuzzleIdx != -1) {
+			puzzles[selectedPuzzleIdx].drag(mx, my);
+			return true;
+		}
+		return false;
+	}
+
+	void unclickPuzzle() {
+		if (selectedPuzzleIdx != -1) {
+			puzzles[selectedPuzzleIdx].stopDrag(false);
+			selectedPuzzleIdx = -1;
 		}
 	}
 };
 
 Board board;
+bool dragging = false;
+GLfloat mouseX = 0, mouseY = 0;
 
 void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 {
@@ -162,6 +204,7 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설�
 	glutDisplayFunc(drawScene); // 출력 함수의 지정
 	glutReshapeFunc(Reshape); // 다시 그리기 함수 지정
 	glutMouseFunc(Mouse); // 마우스 이벤트 콜백 함수 지정
+	glutMotionFunc(Motion); // 마우스 움직임 콜백 함수 지정
 
 	glutMainLoop(); // 이벤트 처리 시작
 }
@@ -185,8 +228,28 @@ GLvoid Mouse(int button, int state, int x, int y) {
 	switch (button) {
 	case GLUT_LEFT_BUTTON:
 		if (state == GLUT_DOWN) {
-		
+			if (!dragging) {
+				mPosToGL(x, y, mouseX, mouseY);
+				dragging = board.clickPuzzle(x, y);
+			}
+		}
+		else if (state == GLUT_UP) {
+			if (dragging) {
+				// 퍼즐이 맞는 위치에 있는지 확인
+				dragging = false;
+				board.unclickPuzzle();
+				glutPostRedisplay();
+			}
 		}
 		break;
+	}
+}
+
+GLvoid Motion(int x, int y) {
+	if (dragging) {
+		GLfloat xGL, yGL;
+		mPosToGL(x, y, xGL, yGL);
+		board.dragPuzzle(xGL - mouseX, yGL - mouseY);
+		glutPostRedisplay();
 	}
 }
