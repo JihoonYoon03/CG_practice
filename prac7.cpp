@@ -11,6 +11,7 @@ constexpr auto winHeight = 600;
 
 GLvoid drawScene(GLvoid);
 GLvoid Reshape(int w, int h);
+GLvoid Keyboard(unsigned char key, int x, int y);
 GLvoid Mouse(int button, int state, int x, int y);
 GLvoid Motion(int x, int y);
 
@@ -95,8 +96,7 @@ class Board {
 	std::vector<Rect> rects;
 	std::vector<Puzzle> puzzles;
 
-	int selectedPuzzleIdx = -1;
-	GLfloat mouseX = 0, mouseY = 0;
+	int selectedPuzzleIdx = -1, correct = 0;
 
 public:
 	Board() {
@@ -141,6 +141,9 @@ public:
 			puzzles.push_back({ adjustedPos, dataSet[i].color });
 			puzzles[i].index = i;
 		}
+
+		selectedPuzzleIdx = -1;
+		correct = 0;
 	}
 
 	bool clickPuzzle(int mx, int my) {
@@ -150,9 +153,6 @@ public:
 				// 드래그 시작
 				selectedPuzzleIdx = &puzzle - &puzzles[0];
 				correctClick = true;
-				mouseX = mx;
-				mouseY = my;
-				std::cout << "Puzzle pos x: " << puzzle.pos.x1 << ", y: " << puzzle.pos.y1 << std::endl;
 			}
 		}
 
@@ -169,8 +169,20 @@ public:
 
 	void unclickPuzzle() {
 		if (selectedPuzzleIdx != -1) {
-			puzzles[selectedPuzzleIdx].stopDrag(false);
+			if (rects[selectedPuzzleIdx].pos.x1 + 0.05f > puzzles[selectedPuzzleIdx].pos.x1 + puzzles[selectedPuzzleIdx].delX &&
+				rects[selectedPuzzleIdx].pos.x2 - 0.05f < puzzles[selectedPuzzleIdx].pos.x2 + puzzles[selectedPuzzleIdx].delX &&
+				rects[selectedPuzzleIdx].pos.y1 - 0.05f < puzzles[selectedPuzzleIdx].pos.y1 + puzzles[selectedPuzzleIdx].delY &&
+				rects[selectedPuzzleIdx].pos.y2 + 0.05f > puzzles[selectedPuzzleIdx].pos.y2 + puzzles[selectedPuzzleIdx].delY) {
+				std::cout << "Correct!" << std::endl;
+				puzzles[selectedPuzzleIdx].stopDrag(true, rects[selectedPuzzleIdx].pos);
+				correct++;
+			}
+			else puzzles[selectedPuzzleIdx].stopDrag(false);
 			selectedPuzzleIdx = -1;
+		}
+
+		if (correct == 10) {
+			std::cout << "You Win!" << std::endl;
 		}
 	}
 };
@@ -203,6 +215,7 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설�
 
 	glutDisplayFunc(drawScene); // 출력 함수의 지정
 	glutReshapeFunc(Reshape); // 다시 그리기 함수 지정
+	glutKeyboardFunc(Keyboard); // 키보드 이벤트 콜백 함수 지정
 	glutMouseFunc(Mouse); // 마우스 이벤트 콜백 함수 지정
 	glutMotionFunc(Motion); // 마우스 움직임 콜백 함수 지정
 
@@ -222,6 +235,19 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 GLvoid Reshape(int w, int h)
 {
 	glViewport(0, 0, w, h);
+}
+
+GLvoid Keyboard(unsigned char key, int x, int y) {
+	switch (key) {
+	case 'r':
+		board.reroll();
+		dragging = false;
+		glutPostRedisplay();
+		break;
+	case 'q':
+		glutLeaveMainLoop();
+		break;
+	}
 }
 
 GLvoid Mouse(int button, int state, int x, int y) {
